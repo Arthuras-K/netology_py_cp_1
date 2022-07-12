@@ -34,7 +34,7 @@ class UseVK:
         if response.json()['response']['count'] == 0:
             return print(f" - Ошибка! У профиля id={id_user} нету фотографий")
         count_photos = []
-        for photo in tqdm(response.json()['response']['items'], desc='Получение фотографий'):
+        for photo in tqdm(response.json()['response']['items'], desc=' - Получение фотографий'):
             count_photos.append({
                 'likes':photo['likes']['count'], 
                 'url':photo['sizes'][-1]['url']
@@ -44,7 +44,7 @@ class UseVK:
 
     # Метод сортирует фото по количеству лайков и убиарет лишние
     def sorted_photos(self, photos_dict, qty_photos = 5) -> list:
-        sorted_list = sorted(photos_dict, key=lambda x: x['likes'])[:qty_photos]
+        sorted_list = sorted(photos_dict, key=lambda x: x['likes'], reverse=True)[:qty_photos]
         print(f' - Фотографии отсортированы\n - Получен список из топ-{qty_photos}')
         # Цикл для проверки уникальности количества лайков, при повторе добавление '*'
         for el in sorted_list:
