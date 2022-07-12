@@ -33,7 +33,7 @@ class UseYDisk:
             params = {'path': path_to}
             response = requests.put(files_url, headers=headers, params=params)  
             if response.status_code == 201:
-                print(" - Создан путь на диске")
+                print(" - Создан путь на диске для загрузки")
                 return path_to
             else:
                 print(' - Ошибка! Код:', response.status_code)  
@@ -51,7 +51,7 @@ class UseYDisk:
             headers = self.get_headers()
             response = requests.post(upload_url, params=params, headers=headers)
             if response.status_code == 202:
-                print(f' - Файл {count} успешно загружен')
+                print(f' - Файл {count} успешно загружен, likes = {el["likes"]}')
             else:
                 print(' - Ошибка! Код:', response.status_code)
         print(' - Конец загрузки на Яндекс.Диск\n')           
