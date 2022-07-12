@@ -1,7 +1,7 @@
 import requests
-# import progress
-# import tqdm
 from pprint import pprint
+from tqdm import tqdm 
+import time
 
 
 class UseVK:
@@ -12,43 +12,46 @@ class UseVK:
             'access_token': token,
             'v': version_api
         }
-    
 
-    # Метод возвращает список фото
-    def get_photos_list(self, id_user = None, album_id = "profile", count = None):
-        # album_id : wall, profile, saved 
-        photos_list_params = {
+    # Метод возвращает словарь "count" фото
+    def get_photos(self, id_user = None, count = None, album_id = "profile") -> list:
+        method_params = {
             "owner_id": id_user,
+            "count": count,
             "album_id": album_id,
             "rev": 1,
             "extended": 1,
-            "photo_sizes": 1,
-            "count": count
+            "photo_sizes": 1
         }
-        photos_list_url = self.url+"photos.get"
-        response = requests.get(photos_list_url, params={**self.params,**photos_list_params})
-        return response.json()
-
-    # Метод получает ссылку и место необходимые для загрузки на диск
-    def get_upload_link(self, disk_file_path):
-        upload_url = "https://cloud-api.yandex.net/v1/disk/resources/upload"
-        headers = self.get_headers()
-        # Параметр "overwrite" - перезапись файла если он там уже есть
-        params = {"path": disk_file_path, "overwrite": "true"}
-        response = requests.get(upload_url, headers=headers, params=params)
+        method_url = self.url+"photos.get"
+        response = requests.get(method_url, params={**self.params,**method_params})
+        if 'error' in response.json():
+            return print(f' - Ошибка! Страница id={id_user} удалена или нет доступа')                  
         if response.status_code == 200:
-            print("Cсылка получена")
+            print(' - Запрос к "api.vk" выполнен успешно')
         else:
-            print('Ошибка! Код:', response.status_code)
-        return response.json()
+            return print(' - Ошибка запроса к "api.vk"! Код:', response.status_code)
+        if response.json()['response']['count'] == 0:
+            return print(f" - Ошибка! У профиля id={id_user} нету фотографий")
+        count_photos = []
+        for photo in tqdm(response.json()['response']['items'], desc='Получение фотографий'):
+            count_photos.append({
+                'likes':photo['likes']['count'], 
+                'url':photo['sizes'][-1]['url']
+                })
+            time.sleep(0.05)
+        return count_photos
 
-    # Метод загружает файл через полученную ссылку
-    def upload_file_to_disk(self, disk_file_path, filename):
-        # Под ключом "href" находится неободимая ссылка, поэтому методом get для словаря достает значение
-        href = self.get_upload_link(disk_file_path=disk_file_path).get("href", "")
-        # Запрос на сохранение файла по полученной ссылке 
-        response = requests.put(href, data=open(filename, 'rb'))
-        if response.status_code == 201:
-            print(f"Файл '{filename}' успешно загружен")
-        else:
-            print('Ошибка! Код:', response.status_code)
+    # Метод сортирует фото по количеству лайков и убиарет лишние
+    def sorted_photos(self, photos_dict, qty_photos = 5) -> list:
+        sorted_list = sorted(photos_dict, key=lambda x: x['likes'])[:qty_photos]
+        print(f' - Фотографии отсортированы\n - Получен список из топ-{qty_photos}')
+        # Цикл для проверки уникальности количества лайков, при повторе добавление '*'
+        for el in sorted_list:
+            likes = str(el['likes'])
+            while True:
+                if likes not in [i['likes'] for i in sorted_list]:
+                    el['likes'] = likes
+                    break
+                likes += '*'
+        return sorted_list
