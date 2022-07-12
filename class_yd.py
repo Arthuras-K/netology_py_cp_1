@@ -4,7 +4,6 @@ import datetime
 
 class UseYDisk:
     url = 'https://cloud-api.yandex.net/v1/disk/'
-    path_to_folder = 'TOP-PHOTOS'    
 
     def __init__(self, token: str):
         self.token = token
