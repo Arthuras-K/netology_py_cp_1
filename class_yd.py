@@ -5,8 +5,8 @@ import datetime
 class UseYDisk:
     url = 'https://cloud-api.yandex.net/v1/disk/'
 
-    def __init__(self, token: str):
-        self.token = token
+    def __init__(self, TOKEN_YD: str):
+        self.token = TOKEN_YD
     
     # Метод создает необходимые заголовки с токеном для доступа к диску
     def get_headers(self):
@@ -15,13 +15,10 @@ class UseYDisk:
             'Authorization': 'OAuth {}'.format(self.token)
         }
 
-    # Метод создает необходимые папки (путь)
-    def create_folder(self, id_user = 'Self', qty_photos = 5) -> str:
+    # Метод создает необходимые папки (путь), если папка с заданным именем еуже есть, то создает рядом еще одну добавив к имени дату
+    def create_folder(self, path_to) -> str:
         files_url = self.url + 'resources/'
         headers = self.get_headers()
-        params = {'path':'disk:/top-VK'}
-        response = requests.put(files_url, headers=headers, params=params)
-        path_to = 'disk:/top-VK/' + 'id=' + str(id_user) + ' TOP-' + str(qty_photos) + ' photos'
         params = {'path': path_to}
         response = requests.put(files_url, headers=headers, params=params)       
         if response.status_code == 201:
@@ -41,18 +38,13 @@ class UseYDisk:
 
 
     # Метод загружает файл по сылке на диск
-    def upload_file_to_disk(self, disk_file_path, photos_list):
+    def upload_file_to_disk(self, file_name, file_url):
         upload_url = self.url + 'resources/upload'
-        count = 0
-        for el in photos_list:
-            count += 1
-            params = {'path': disk_file_path + '/' + str(count) + ' likes-' + el['likes'] + '.jpg', 'url': el['url']} 
-            headers = self.get_headers()
-            response = requests.post(upload_url, params=params, headers=headers)
-            if response.status_code == 202:
-                print(f' - Файл {count} успешно загружен, likes = {el["likes"]}')
-            else:
-                print(' - Ошибка! Код:', response.status_code)
-        print(' - Конец загрузки на Яндекс.Диск\n')           
-
+        params = {'path': file_name, 'url': file_url} 
+        headers = self.get_headers()
+        response = requests.post(upload_url, params=params, headers=headers)
+        if response.status_code == 202:
+            print(f' - Файл {file_name.split("/")[-1]} успешно загружен')
+        else:
+            print(' - Ошибка! Код:', response.status_code)
 

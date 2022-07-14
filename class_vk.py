@@ -7,10 +7,10 @@ import time
 class UseVK:
     url = 'http://api.vk.com/method/'
 
-    def __init__(self, version_api: str, token: str):
+    def __init__(self, VER_API_VK: str, TOKEN_VK_PH: str):
         self.params = {
-            'access_token': token,
-            'v': version_api
+            'access_token': TOKEN_VK_PH,
+            'v': VER_API_VK
         }
 
     # Метод возвращает словарь "count" фото
